@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block title %}Admin — {{ title }}{% endblock %}
+{% block content %}
+<h1 class="mb-4 text-lg font-semibold text-white">Add documents to the knowledge base</h1>
+<p class="mb-4 text-sm text-slate-400">Uploads <code class="text-slate-300">.txt</code> or <code class="text-slate-300">.pdf</code> files. Chunks are embedded and merged into the FAISS index (duplicates are skipped).</p>
+<form id="up" class="space-y-4" enctype="multipart/form-data">
+  <div>
+    <label class="mb-1 block text-sm text-slate-400" for="files">Files</label>
+    <input
+      type="file"
+      id="files"
+      name="files"
+      multiple
+      accept=".txt,.pdf,application/pdf"
+      class="block w-full text-sm text-slate-300 file:mr-2 file:rounded file:border-0 file:bg-slate-700 file:px-3 file:py-2 file:text-slate-100"
+    />
+  </div>
+  <div>
+    <label class="mb-1 block text-sm text-slate-400" for="adminToken"
+      >Admin token (optional) — <span class="text-slate-500">only if <code>ADMIN_TOKEN</code> is set in the environment</span></label
+    >
+    <input
+      type="password"
+      id="adminToken"
+      class="w-full max-w-md rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm"
+      placeholder="X-Admin-Token value"
+      autocomplete="off"
+    />
+  </div>
+  <button type="submit" id="go" class="rounded-lg bg-sky-600 px-4 py-2 text-sm font-medium text-white hover:bg-sky-500 disabled:opacity-50">Upload and index</button>
+</form>
+<div id="out" class="mt-6 hidden rounded-lg border border-slate-800 bg-slate-900/60 p-3 text-sm text-slate-300 pre-wrap"></div>
+<div id="bad" class="mt-2 hidden rounded-lg border border-rose-900/80 bg-rose-950/40 p-2 text-sm text-rose-200"></div>
+{% endblock %}
+{% block scripts %}
+<script>
+  (function () {
+    const form = document.getElementById("up");
+    const out = document.getElementById("out");
+    const bad = document.getElementById("bad");
+    const go = document.getElementById("go");
+    const token = document.getElementById("adminToken");
+
+    function showBad(m) {
+      if (!m) { bad.classList.add("hidden"); bad.textContent = ""; return; }
+      bad.textContent = m; bad.classList.remove("hidden");
+    }
+    function showOut(obj) {
+      out.textContent = JSON.stringify(obj, null, 2);
+      out.classList.remove("hidden");
+    }
+    form.addEventListener("submit", async function (e) {
+      e.preventDefault();
+      showBad("");
+      const el = document.getElementById("files");
+      const fileList = el && el.files ? el.files : [];
+      if (!fileList.length) {
+        showBad("Select at least one file.");
+        return;
+      }
+      const fd = new FormData();
+      for (let i = 0; i < fileList.length; i++) {
+        fd.append("files", fileList[i], fileList[i].name);
+      }
+      go.disabled = true;
+      try {
+        const headers = {};
+        const t = (token && token.value) ? String(token.value).trim() : "";
+        if (t) headers["X-Admin-Token"] = t;
+        const res = await fetch("/add-documents", { method: "POST", body: fd, headers: headers });
+        const data = await res.json().catch(function () { return { raw: "non-JSON body" }; });
+        if (!res.ok) {
+          const d = data && data.detail
+            ? (typeof data.detail === "string" ? data.detail : JSON.stringify(data.detail))
+            : "Failed " + res.status;
+          showBad(d);
+          return;
+        }
+        showOut(data);
+      } catch (err) {
+        showBad(err && err.message ? err.message : "Request failed");
+      } finally {
+        go.disabled = false;
+      }
+    });
+  })();
+</script>
+{% endblock %}

@@ -1,0 +1,301 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="mb-2 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
+  <span>Test UI — <code class="rounded bg-slate-800 px-1">POST /chat</code></span>
+  <label class="inline-flex cursor-pointer items-center gap-1 select-none">
+    <input type="checkbox" id="debugSources" class="rounded border-slate-600 bg-slate-900" {% if include_sources_default %}checked{% endif %} />
+    <span>Show source chunks</span>
+  </label>
+</div>
+<div
+  id="chat"
+  class="flex h-[min(70vh,520px)] flex-col overflow-hidden rounded-xl border border-slate-800 bg-slate-900/50"
+>
+  <div id="log" class="min-h-0 flex-1 space-y-2 overflow-y-auto p-3 scroll-smooth"></div>
+  <div id="loadRow" class="hidden border-t border-slate-800 py-2 text-center text-sm text-slate-400" aria-live="polite">Thinking…</div>
+  <form id="form" class="flex border-t border-slate-800 p-2 gap-2" autocomplete="off">
+    <input
+      type="text"
+      id="msg"
+      class="min-w-0 flex-1 rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+      placeholder="Ask a question…"
+      required
+    />
+    <button
+      type="submit"
+      id="send"
+      class="shrink-0 rounded-lg bg-sky-600 px-4 py-2 text-sm font-medium text-white hover:bg-sky-500 disabled:opacity-50"
+    >Send</button>
+    <button
+      type="button"
+      id="clear"
+      class="shrink-0 rounded-lg border border-slate-600 px-3 py-2 text-sm text-slate-300 hover:bg-slate-800"
+    >Clear</button>
+  </form>
+</div>
+<div
+  id="err"
+  class="mt-2 hidden rounded-lg border border-rose-900/80 bg-rose-950/40 p-2 text-sm text-rose-200"
+  role="alert"
+></div>
+{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" crossorigin="anonymous" />
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js" crossorigin="anonymous"></script>
+{% endblock %}
+{% block scripts %}
+<script>
+  (function () {
+    const log = document.getElementById("log");
+    const form = document.getElementById("form");
+    const input = document.getElementById("msg");
+    const sendBtn = document.getElementById("send");
+    const clearBtn = document.getElementById("clear");
+    const errBox = document.getElementById("err");
+    const loadRow = document.getElementById("loadRow");
+    const debugEl = document.getElementById("debugSources");
+
+    function showErr(m) {
+      if (!m) {
+        errBox.classList.add("hidden");
+        errBox.textContent = "";
+        return;
+      }
+      errBox.textContent = m;
+      errBox.classList.remove("hidden");
+    }
+    function scrollToBottom() {
+      log.scrollTop = log.scrollHeight;
+    }
+    function setLoading(loading) {
+      loadRow.classList.toggle("hidden", !loading);
+      input.disabled = loading;
+      sendBtn.disabled = loading;
+    }
+    function escapeHtml(s) {
+      return String(s)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+    }
+
+    /** Convert \\[ \\] and \\( \\) to $$ / $ so KaTeX can find them */
+    function normalizeEscapedTexDelimiters(md) {
+      return md
+        .replace(/\\\[\s*((?:[^\\\]]|\\.)+?)\s*\\\]/g, function (_, inner) {
+          return "$$" + inner.trim() + "$$";
+        })
+        .replace(/\\\(\s*((?:[^\\\)]|\\.)+?)\s*\\\)/g, function (_, inner) {
+          return "$" + inner.trim() + "$";
+        });
+    }
+
+    /**
+     * LLMs often emit display math as [ \\frac{...}{...} ] — not valid for Markdown or KaTeX.
+     * Only rewrite when the bracket content looks like LaTeX (has \\command), so [links](url) stay intact.
+     */
+    function normalizeBracketDisplayMath(md) {
+      return md.replace(/\[\s*((?:[^\\\]]|\\.)+)\s*\]/g, function (full, inner) {
+        inner = inner.trim();
+        if (/\\[a-zA-Z]+/.test(inner)) return "$$" + inner + "$$";
+        return full;
+      });
+    }
+
+    /** Split on $$ ... $$ so Marked never sees raw underscores inside formulas */
+    function splitDisplayMath(md) {
+      var segments = [];
+      var rest = md;
+      while (rest.length) {
+        var start = rest.indexOf("$$");
+        if (start === -1) {
+          segments.push({ kind: "md", text: rest });
+          break;
+        }
+        if (start > 0) segments.push({ kind: "md", text: rest.slice(0, start) });
+        var end = rest.indexOf("$$", start + 2);
+        if (end === -1) {
+          segments.push({ kind: "md", text: rest });
+          break;
+        }
+        segments.push({
+          kind: "math",
+          text: rest.slice(start + 2, end).trim(),
+          display: true,
+        });
+        rest = rest.slice(end + 2);
+      }
+      return segments.length ? segments : [{ kind: "md", text: md }];
+    }
+
+    function renderAssistantMarkdown(raw) {
+      var md = typeof raw === "string" ? raw : "";
+      try {
+        md = normalizeEscapedTexDelimiters(md);
+        md = normalizeBracketDisplayMath(md);
+        var segments = splitDisplayMath(md);
+        var htmlParts = segments.map(function (seg) {
+          if (seg.kind === "math") {
+            if (typeof katex !== "undefined" && katex.renderToString) {
+              return katex.renderToString(seg.text, {
+                displayMode: true,
+                throwOnError: false,
+                strict: false,
+              });
+            }
+            return "<pre class=\"my-2 overflow-x-auto rounded border border-slate-700 bg-slate-950 p-2 text-xs text-slate-300\">" +
+              escapeHtml(seg.text) +
+              "</pre>";
+          }
+          var h =
+            typeof marked !== "undefined" && marked.parse
+              ? marked.parse(seg.text, { breaks: true })
+              : escapeHtml(seg.text);
+          return typeof h === "string" ? h : "";
+        });
+        var html = htmlParts.join("");
+        return typeof DOMPurify !== "undefined" && DOMPurify.sanitize
+          ? DOMPurify.sanitize(html, {
+              ADD_TAGS: ["svg", "path", "line", "g", "defs", "use"],
+              ADD_ATTR: [
+                "style",
+                "xmlns",
+                "width",
+                "height",
+                "viewBox",
+                "preserveAspectRatio",
+                "stroke",
+                "fill",
+                "stroke-width",
+                "d",
+                "x",
+                "y",
+                "x1",
+                "y1",
+                "x2",
+                "y2",
+                "aria-hidden",
+                "aria-label",
+                "role",
+              ],
+            })
+          : html;
+      } catch (e) {
+        return "<p>" + escapeHtml(md) + "</p>";
+      }
+    }
+
+    /** Inline / leftover display math after Markdown (e.g. $x$, or $$ not split) */
+    function renderMathInBubble(el) {
+      if (typeof renderMathInElement === "undefined") return;
+      try {
+        renderMathInElement(el, {
+          delimiters: [
+            { left: "$$", right: "$$", display: true },
+            { left: "\\[", right: "\\]", display: true },
+            { left: "$", right: "$", display: false },
+            { left: "\\(", right: "\\)", display: false },
+          ],
+          throwOnError: false,
+          strict: false,
+        });
+      } catch (e) { /* ignore */ }
+    }
+
+    function bubble(isUser, text) {
+      const row = document.createElement("div");
+      row.className = "flex " + (isUser ? "justify-end" : "justify-start");
+      const b = document.createElement("div");
+      b.className =
+        "max-w-[85%] rounded-2xl px-3 py-2 text-sm " +
+        (isUser
+          ? "bg-sky-800 text-sky-50 rounded-br-md whitespace-pre-wrap break-words"
+          : "bg-slate-800 text-slate-100 rounded-bl-md border border-slate-700 " +
+            "prose prose-invert prose-sm max-w-none prose-p:my-2 prose-ul:my-2 prose-ol:my-2 " +
+            "prose-headings:my-2 prose-headings:font-semibold prose-li:my-0.5 " +
+            "prose-pre:bg-slate-950 prose-pre:border prose-pre:border-slate-700 prose-pre:text-slate-200 " +
+            "prose-code:text-sky-200 prose-code:bg-slate-950/80 prose-code:px-1 prose-code:py-0.5 prose-code:rounded " +
+            "prose-a:text-sky-400 prose-blockquote:border-slate-600 prose-blockquote:text-slate-300 " +
+            "[&_.katex-display]:my-3 [&_.katex-display]:overflow-x-auto [&_.katex]:text-inherit");
+      if (isUser) {
+        b.textContent = text;
+      } else {
+        b.innerHTML = renderAssistantMarkdown(text);
+        renderMathInBubble(b);
+      }
+      row.appendChild(b);
+      log.appendChild(row);
+    }
+    function addSources(sources) {
+      if (!sources || !sources.length) return;
+      const wrap = document.createElement("div");
+      wrap.className =
+        "ml-0 rounded-lg border border-slate-800 bg-slate-950/80 p-2 text-xs text-slate-500";
+      const t = document.createElement("div");
+      t.className = "mb-1 font-medium text-slate-400";
+      t.textContent = "Sources (debug)";
+      wrap.appendChild(t);
+      const ul = document.createElement("ul");
+      ul.className = "list-decimal space-y-1 pl-4";
+      for (const s of sources) {
+        const li = document.createElement("li");
+        li.className = "break-words";
+        li.textContent =
+          s.source +
+          " (score: " +
+          Number(s.score).toFixed(3) +
+          ")\n" +
+          s.text;
+        ul.appendChild(li);
+      }
+      wrap.appendChild(ul);
+      log.appendChild(wrap);
+    }
+
+    form.addEventListener("submit", async function (e) {
+      e.preventDefault();
+      const text = (input.value || "").trim();
+      if (!text) return;
+      showErr("");
+      bubble(true, text);
+      input.value = "";
+      setLoading(true);
+      scrollToBottom();
+      const body = { message: text, include_sources: debugEl.checked };
+      try {
+        const res = await fetch("/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Accept: "application/json" },
+          body: JSON.stringify(body),
+        });
+        const data = await res.json().catch(function () { return null; });
+        if (!res.ok) {
+          const d = (data && data.detail) ? (typeof data.detail === "string" ? data.detail : JSON.stringify(data.detail)) : "Request failed " + res.status;
+          showErr(d);
+          return;
+        }
+        bubble(false, (data && data.reply) || "");
+        if (debugEl.checked && data && data.sources) {
+          addSources(data.sources);
+        }
+      } catch (err) {
+        showErr(err && err.message ? err.message : "Network error");
+      } finally {
+        setLoading(false);
+        scrollToBottom();
+        input.focus();
+      }
+    });
+
+    clearBtn.addEventListener("click", function () {
+      log.innerHTML = "";
+      showErr("");
+    });
+
+    input.focus();
+  })();
+</script>
+{% endblock %}

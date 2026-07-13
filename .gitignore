@@ -1,0 +1,14 @@
+.vercel/
+.venv/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+.DS_Store
+.env*
+
+# Local knowledge base (FAISS)
+data/kb/*
+!data/kb/.gitkeep
