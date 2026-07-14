@@ -1,88 +1,104 @@
 {% extends "base.html" %}
 {% block title %}Admin — {{ title }}{% endblock %}
 {% block content %}
-<h1 class="mb-4 text-lg font-semibold text-white">Add documents to the knowledge base</h1>
-<p class="mb-4 text-sm text-slate-400">Uploads <code class="text-slate-300">.txt</code> or <code class="text-slate-300">.pdf</code> files. Chunks are embedded and merged into the FAISS index (duplicates are skipped).</p>
-<form id="up" class="space-y-4" enctype="multipart/form-data">
-  <div>
-    <label class="mb-1 block text-sm text-slate-400" for="files">Files</label>
-    <input
-      type="file"
-      id="files"
-      name="files"
-      multiple
-      accept=".txt,.pdf,application/pdf"
-      class="block w-full text-sm text-slate-300 file:mr-2 file:rounded file:border-0 file:bg-slate-700 file:px-3 file:py-2 file:text-slate-100"
-    />
+<div class="max-w-2xl mx-auto">
+  <div class="mb-6">
+    <h1 class="text-xl font-semibold text-white font-heading">Knowledge Base</h1>
+    <p class="mt-1.5 text-sm text-white/40">Upload <code class="text-[#A78BFA] bg-white/[0.04] px-1.5 py-0.5 rounded text-xs font-mono">.txt</code> or <code class="text-[#A78BFA] bg-white/[0.04] px-1.5 py-0.5 rounded text-xs font-mono">.pdf</code> documents to enrich the AI knowledge base. Files are chunked, embedded, and merged into the search index.</p>
   </div>
-  <div>
-    <label class="mb-1 block text-sm text-slate-400" for="adminToken"
-      >Admin token (optional) — <span class="text-slate-500">only if <code>ADMIN_TOKEN</code> is set in the environment</span></label
-    >
-    <input
-      type="password"
-      id="adminToken"
-      class="w-full max-w-md rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm"
-      placeholder="X-Admin-Token value"
-      autocomplete="off"
-    />
+
+  <div class="rounded-2xl border border-white/[0.08] bg-white/[0.02] backdrop-blur-xl p-6 shadow-2xl shadow-black/40">
+    <form id="up" enctype="multipart/form-data">
+      <div class="space-y-5">
+        <div>
+          <label class="mb-2 block text-sm font-medium text-white/70" for="files">Documents</label>
+          <div class="relative">
+            <input
+              type="file"
+              id="files"
+              name="files"
+              multiple
+              accept=".txt,.pdf,application/pdf"
+              class="block w-full text-sm text-white/40 file:mr-3 file:rounded-lg file:border-0 file:bg-gradient-to-br file:from-[#7C3AED]/20 file:to-[#A78BFA]/10 file:px-4 file:py-2.5 file:text-sm file:font-medium file:text-[#A78BFA] hover:file:from-[#7C3AED]/30 hover:file:to-[#A78BFA]/20 file:transition-all file:duration-200 file:cursor-pointer cursor-pointer border-2 border-dashed border-white/[0.08] rounded-xl p-4 hover:border-[#7C3AED]/30 hover:bg-white/[0.02] transition-all duration-200"
+            />
+          </div>
+          <p class="mt-2 text-xs text-white/30">Select one or more files to add to the knowledge base</p>
+        </div>
+
+        <div>
+          <label class="mb-2 block text-sm font-medium text-white/70" for="adminToken">
+            Admin token
+            <span class="text-white/30 font-normal ml-1">(optional — only if <code class="text-xs font-mono text-white/40">ADMIN_TOKEN</code> is set)</span>
+          </label>
+          <input
+            type="password"
+            id="adminToken"
+            class="w-full max-w-sm rounded-xl border border-white/[0.08] bg-white/[0.03] px-4 py-2.5 text-sm text-white placeholder-white/20 focus:border-[#7C3AED]/40 focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/20 transition-all duration-200"
+            placeholder="Enter admin token"
+            autocomplete="off"
+          />
+        </div>
+
+        <button type="submit" id="go" class="w-full sm:w-auto rounded-xl bg-gradient-to-r from-[#7C3AED] to-[#6D28D9] px-6 py-2.5 text-sm font-medium text-white shadow-lg shadow-[#7C3AED]/25 hover:shadow-[#7C3AED]/40 hover:from-[#6D28D9] hover:to-[#5B21B6] disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200">
+          <span class="flex items-center justify-center gap-2">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            Upload and Index
+          </span>
+        </button>
+      </div>
+    </form>
   </div>
-  <button type="submit" id="go" class="rounded-lg bg-sky-600 px-4 py-2 text-sm font-medium text-white hover:bg-sky-500 disabled:opacity-50">Upload and index</button>
-</form>
-<div id="out" class="mt-6 hidden rounded-lg border border-slate-800 bg-slate-900/60 p-3 text-sm text-slate-300 pre-wrap"></div>
-<div id="bad" class="mt-2 hidden rounded-lg border border-rose-900/80 bg-rose-950/40 p-2 text-sm text-rose-200"></div>
+
+  <div id="out" class="mt-4 hidden rounded-xl border border-white/[0.06] bg-white/[0.02] p-4 text-sm text-white/60 font-mono whitespace-pre-wrap backdrop-blur-sm"></div>
+
+  <div id="bad" class="mt-3 hidden rounded-xl border border-rose-500/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-300 backdrop-blur-sm"></div>
+</div>
 {% endblock %}
+
 {% block scripts %}
 <script>
-  (function () {
-    const form = document.getElementById("up");
-    const out = document.getElementById("out");
-    const bad = document.getElementById("bad");
-    const go = document.getElementById("go");
-    const token = document.getElementById("adminToken");
+(function () {
+  const form = document.getElementById("up");
+  const out = document.getElementById("out");
+  const bad = document.getElementById("bad");
+  const go = document.getElementById("go");
+  const token = document.getElementById("adminToken");
 
-    function showBad(m) {
-      if (!m) { bad.classList.add("hidden"); bad.textContent = ""; return; }
-      bad.textContent = m; bad.classList.remove("hidden");
-    }
-    function showOut(obj) {
-      out.textContent = JSON.stringify(obj, null, 2);
-      out.classList.remove("hidden");
-    }
-    form.addEventListener("submit", async function (e) {
-      e.preventDefault();
-      showBad("");
-      const el = document.getElementById("files");
-      const fileList = el && el.files ? el.files : [];
-      if (!fileList.length) {
-        showBad("Select at least one file.");
+  function showBad(m) {
+    if (!m) { bad.classList.add("hidden"); bad.textContent = ""; return; }
+    bad.textContent = m; bad.classList.remove("hidden");
+  }
+  function showOut(obj) {
+    out.textContent = JSON.stringify(obj, null, 2);
+    out.classList.remove("hidden");
+  }
+  form.addEventListener("submit", async function(e) {
+    e.preventDefault();
+    showBad("");
+    const el = document.getElementById("files");
+    const fileList = el && el.files ? el.files : [];
+    if (!fileList.length) { showBad("Select at least one file."); return; }
+    const fd = new FormData();
+    for (let i = 0; i < fileList.length; i++) fd.append("files", fileList[i], fileList[i].name);
+    go.disabled = true;
+    try {
+      const headers = {};
+      const t = (token && token.value) ? String(token.value).trim() : "";
+      if (t) headers["X-Admin-Token"] = t;
+      const res = await fetch("/add-documents", { method: "POST", body: fd, headers: headers });
+      const data = await res.json().catch(function() { return { raw: "non-JSON body" }; });
+      if (!res.ok) {
+        const d = data && data.detail ? (typeof data.detail === "string" ? data.detail : JSON.stringify(data.detail)) : "Failed " + res.status;
+        showBad(d);
         return;
       }
-      const fd = new FormData();
-      for (let i = 0; i < fileList.length; i++) {
-        fd.append("files", fileList[i], fileList[i].name);
-      }
-      go.disabled = true;
-      try {
-        const headers = {};
-        const t = (token && token.value) ? String(token.value).trim() : "";
-        if (t) headers["X-Admin-Token"] = t;
-        const res = await fetch("/add-documents", { method: "POST", body: fd, headers: headers });
-        const data = await res.json().catch(function () { return { raw: "non-JSON body" }; });
-        if (!res.ok) {
-          const d = data && data.detail
-            ? (typeof data.detail === "string" ? data.detail : JSON.stringify(data.detail))
-            : "Failed " + res.status;
-          showBad(d);
-          return;
-        }
-        showOut(data);
-      } catch (err) {
-        showBad(err && err.message ? err.message : "Request failed");
-      } finally {
-        go.disabled = false;
-      }
-    });
-  })();
+      showOut(data);
+    } catch (err) {
+      showBad(err && err.message ? err.message : "Request failed");
+    } finally {
+      go.disabled = false;
+    }
+  });
+})();
 </script>
 {% endblock %}

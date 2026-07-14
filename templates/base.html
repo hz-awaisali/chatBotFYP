@@ -3,23 +3,93 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>{% block title %}University RAG Chatbot{% endblock %}</title>
+  <title>{% block title %}UniChat RAG{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
+  <style>
+    body { font-family: 'DM Sans', sans-serif; }
+    h1, h2, h3, h4, h5, h6, .font-heading { font-family: 'Space Grotesk', sans-serif; }
+
+    @keyframes blob1 { 0%,100%{transform:translate(0,0) scale(1)} 33%{transform:translate(100px,-80px) scale(1.15)} 66%{transform:translate(-60px,60px) scale(.85)} }
+    @keyframes blob2 { 0%,100%{transform:translate(0,0) scale(1)} 33%{transform:translate(-90px,70px) scale(1.1)} 66%{transform:translate(80px,-40px) scale(.9)} }
+    @keyframes blob3 { 0%,100%{transform:translate(0,0) scale(1)} 33%{transform:translate(50px,90px) scale(.9)} 66%{transform:translate(-70px,-60px) scale(1.1)} }
+    .blob-1 { animation: blob1 22s ease-in-out infinite; }
+    .blob-2 { animation: blob2 25s ease-in-out infinite; }
+    .blob-3 { animation: blob3 20s ease-in-out infinite; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .blob-1, .blob-2, .blob-3 { animation: none; display: none; }
+      *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+    }
+
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 999px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+
+    .typing-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(167,139,250,0.6); animation: typingBounce 1.4s ease-in-out infinite; }
+    .typing-dot:nth-child(2) { animation-delay: .2s; }
+    .typing-dot:nth-child(3) { animation-delay: .4s; }
+    @keyframes typingBounce { 0%,60%,100%{transform:translateY(0);opacity:.4} 30%{transform:translateY(-8px);opacity:1} }
+
+    .msg-enter { animation: msgIn .3s ease-out; }
+    @keyframes msgIn { from{opacity:0;transform:translateY(8px) scale(.98)} to{opacity:1;transform:translateY(0) scale(1)} }
+
+    .glass-glow { transition: box-shadow .3s ease, border-color .3s ease; }
+    .glass-glow:hover { box-shadow: 0 0 30px rgba(124,58,237,.15), 0 0 60px rgba(124,58,237,.05); border-color: rgba(124,58,237,.3); }
+
+    .nav-link { transition: all .2s ease; }
+    .nav-link:hover { background: rgba(255,255,255,.06); color: #fff; }
+    .nav-link.active { background: rgba(124,58,237,.15); color: #A78BFA; }
+
+    .shimmer { background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%); background-size: 200% 100%; animation: shimmer 2s infinite; }
+    @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+  </style>
   {% block head %}{% endblock %}
 </head>
-<body class="min-h-screen bg-slate-950 text-slate-100 antialiased">
-  <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur">
-    <div class="mx-auto flex max-w-3xl items-center justify-between px-4 py-3">
-      <a href="/" class="text-sm font-semibold text-white">RAG University Chat</a>
-      <nav class="flex gap-4 text-xs text-slate-400">
-        <a class="hover:text-slate-200" href="/">Chat</a>
-        <a class="hover:text-slate-200" href="/admin">Admin</a>
-        <a class="hover:text-slate-200" href="/docs">API docs</a>
-        <a class="hover:text-slate-200" href="/health">Health</a>
+<body class="min-h-screen bg-gradient-to-b from-[#050506] via-[#0a0a0c] to-[#020203] text-[#EDEDEF] antialiased overflow-x-hidden">
+
+  <div class="fixed inset-0 -z-10 overflow-hidden pointer-events-none" aria-hidden="true">
+    <div class="blob-1 absolute -top-40 -left-40 w-[600px] h-[600px] rounded-full bg-[#7C3AED] opacity-[0.08] blur-[100px]"></div>
+    <div class="blob-2 absolute top-1/2 -right-40 w-[500px] h-[500px] rounded-full bg-[#0891B2] opacity-[0.06] blur-[90px]"></div>
+    <div class="blob-3 absolute -bottom-40 left-1/3 w-[550px] h-[550px] rounded-full bg-[#A78BFA] opacity-[0.05] blur-[100px]"></div>
+  </div>
+
+  <header class="sticky top-0 z-50 border-b border-white/[0.06] bg-[#050506]/80 backdrop-blur-xl">
+    <div class="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
+      <a href="/" class="flex items-center gap-2.5 group">
+        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-[#7C3AED] to-[#A78BFA] flex items-center justify-center shadow-lg shadow-[#7C3AED]/30 group-hover:shadow-[#7C3AED]/50 transition-shadow duration-300">
+          <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        </div>
+        <span class="text-sm font-semibold text-white font-heading">UniChat</span>
+      </a>
+      <nav class="flex items-center gap-1">
+        <a href="/" class="nav-link flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium text-white/60">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          Chat
+        </a>
+        <a href="/admin" class="nav-link flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium text-white/60">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          Admin
+        </a>
+        <a href="/docs" class="nav-link flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium text-white/60">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+          API
+        </a>
+        <a href="/health" class="nav-link flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium text-white/60">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+          Health
+        </a>
       </nav>
     </div>
   </header>
-  <main class="mx-auto max-w-3xl px-4 py-6">{% block content %}{% endblock %}</main>
+
+  <main class="mx-auto max-w-4xl px-4 py-8">
+    {% block content %}{% endblock %}
+  </main>
+
   {% block scripts %}{% endblock %}
 </body>
 </html>
