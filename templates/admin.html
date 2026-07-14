@@ -1,6 +1,35 @@
 {% extends "base.html" %}
 {% block title %}Admin — {{ title }}{% endblock %}
+
+{% block head %}
+{{ super() }}
+<style>
+  .alert-success {
+    background: rgba(16, 185, 129, 0.06);
+    border: 1px solid rgba(16, 185, 129, 0.15);
+    color: #34d399;
+  }
+  [data-theme="light"] .alert-success {
+    background: rgba(16, 185, 129, 0.04);
+    border-color: rgba(16, 185, 129, 0.25);
+    color: #065f46;
+  }
+  
+  .alert-warning {
+    background: rgba(245, 158, 11, 0.06);
+    border: 1px solid rgba(245, 158, 11, 0.15);
+    color: #fbbf24;
+  }
+  [data-theme="light"] .alert-warning {
+    background: rgba(245, 158, 11, 0.04);
+    border-color: rgba(245, 158, 11, 0.25);
+    color: #92400e;
+  }
+</style>
+{% endblock %}
+
 {% block content %}
+
 <div class="max-w-2xl mx-auto">
   <div class="mb-6">
     <h1 class="text-xl font-semibold font-heading text-theme">Knowledge Base</h1>
@@ -56,7 +85,7 @@
     </form>
   </div>
 
-  <div id="out" class="mt-4 hidden rounded-xl border p-4 text-sm font-mono whitespace-pre-wrap backdrop-blur-sm" style="background: var(--glass-bg); border-color: var(--glass-border); color: var(--text-muted);"></div>
+  <div id="out" class="mt-4 hidden rounded-xl p-4 text-sm alert-success backdrop-blur-sm"></div>
   <div id="bad" class="mt-3 hidden rounded-xl border px-4 py-3 text-sm backdrop-blur-sm" style="background: var(--rose-bg); border-color: var(--rose-border); color: var(--error-text);"></div>
 
   <!-- Document List Manager -->
@@ -117,10 +146,75 @@
     bad.textContent = m; bad.classList.remove("hidden");
   }
 
-  function showOut(obj) {
-    out.textContent = JSON.stringify(obj, null, 2);
+  function showOut(data) {
+    if (!data) {
+      out.classList.add("hidden");
+      out.innerHTML = "";
+      return;
+    }
+    
+    let html = "";
+    if (data.status === "success") {
+      html = `
+        <div class="flex items-start gap-3">
+          <svg class="w-5 h-5 mt-0.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <div>
+            <div class="font-semibold text-sm">Action Successful</div>
+            <div class="text-xs opacity-90 mt-1">${data.message}</div>
+          </div>
+        </div>
+      `;
+    } else if (data.files_processed !== undefined) {
+      html = `
+        <div class="flex items-start gap-3">
+          <svg class="w-5 h-5 mt-0.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <div>
+            <div class="font-semibold text-sm">Ingestion Complete</div>
+            <div class="text-xs opacity-90 mt-1.5 space-y-1">
+              <div>Files processed: <strong>${data.files_processed}</strong></div>
+              <div>Chunks added to search index: <strong>${data.chunks_added}</strong></div>
+              <div>Duplicates skipped: <strong>${data.chunks_skipped_duplicates}</strong></div>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      if (data.file_errors && data.file_errors.length > 0) {
+        html += `
+          <div class="alert-warning rounded-xl p-3 mt-3 text-xs flex items-start gap-2.5">
+            <svg class="w-4 h-4 mt-0.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+            </svg>
+            <div>
+              <div class="font-semibold">Some files could not be processed:</div>
+              <ul class="list-disc pl-4 mt-1 space-y-0.5 opacity-90">
+                ${data.file_errors.map(e => `<li><strong>${e.filename}</strong>: ${e.error}</li>`).join("")}
+              </ul>
+            </div>
+          </div>
+        `;
+      }
+    } else {
+      html = `<pre class="font-mono text-xs">${escapeHtml(JSON.stringify(data, null, 2))}</pre>`;
+    }
+    
+    out.innerHTML = html;
     out.classList.remove("hidden");
   }
+
+  function escapeHtml(text) {
+    return text
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
 
   function showRebuild(show, msg = "Rebuilding vector database index...") {
     if (show) {
