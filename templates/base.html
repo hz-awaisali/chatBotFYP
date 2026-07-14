@@ -159,6 +159,9 @@
 
     .toggle-track { background: var(--toggle-track); }
     .toggle-dot { background: var(--toggle-dot); }
+    .peer:checked ~ .toggle-track { background: rgba(124,58,237,0.5); }
+    .peer:checked ~ .toggle-track .toggle-dot { transform: translateX(1rem); background: #ffffff; }
+    .peer:focus-visible ~ .toggle-track { outline: 2px solid rgba(124,58,237,0.5); outline-offset: 2px; }
     .msg-enter { animation: msgIn .3s ease-out; }
     @keyframes msgIn { from{opacity:0;transform:translateY(8px) scale(.98)} to{opacity:1;transform:translateY(0) scale(1)} }
 
