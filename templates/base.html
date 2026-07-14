@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -9,8 +9,131 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
   <style>
+    :root { color-scheme: dark; }
+    [data-theme="light"] { color-scheme: light; }
     body { font-family: 'DM Sans', sans-serif; }
     h1, h2, h3, h4, h5, h6, .font-heading { font-family: 'Space Grotesk', sans-serif; }
+
+    [data-theme="dark"] {
+      --bg-deep: #050506; --bg-mid: #0a0a0c; --bg-top: #020203;
+      --text-primary: #EDEDEF; --text-dim: rgba(255,255,255,0.4);
+      --text-muted: #8A8F98; --text-accent: #A78BFA;
+      --glass-bg: rgba(255,255,255,0.02); --glass-bg-hover: rgba(255,255,255,0.04);
+      --glass-border: rgba(255,255,255,0.08); --glass-border-light: rgba(255,255,255,0.06);
+      --nav-bg: rgba(5,5,6,0.8); --nav-border: rgba(255,255,255,0.06);
+      --input-bg: rgba(255,255,255,0.03); --input-border: rgba(255,255,255,0.08);
+      --input-placeholder: rgba(255,255,255,0.3); --input-focus: rgba(124,58,237,0.4);
+      --input-focus-ring: rgba(124,58,237,0.2);
+      --chat-bg: rgba(255,255,255,0.02); --chat-shadow: rgba(0,0,0,0.4);
+      --ai-bubble-bg: rgba(255,255,255,0.03); --ai-bubble-border: rgba(255,255,255,0.06);
+      --ai-accent: #A78BFA; --user-bubble: linear-gradient(135deg, #7C3AED, #6D28D9);
+      --user-shadow: rgba(124,58,237,0.2);
+      --btn-primary: linear-gradient(to right, #7C3AED, #6D28D9);
+      --btn-primary-hover: linear-gradient(to right, #6D28D9, #5B21B6);
+      --btn-shadow: rgba(124,58,237,0.25); --btn-shadow-hover: rgba(124,58,237,0.4);
+      --btn-secondary-border: rgba(255,255,255,0.08);
+      --btn-secondary-text: rgba(255,255,255,0.4);
+      --btn-secondary-hover: rgba(255,255,255,0.04);
+      --btn-secondary-text-hover: rgba(255,255,255,0.7);
+      --error-bg: rgba(244,63,94,0.1); --error-border: rgba(244,63,94,0.2);
+      --error-text: #FDA4AF; --rose-bg: rgba(244,63,94,0.1); --rose-border: rgba(244,63,94,0.2);
+      --toggle-track: rgba(255,255,255,0.08); --toggle-track-active: rgba(124,58,237,0.5);
+      --toggle-dot: rgba(255,255,255,0.4); --toggle-dot-active: #ffffff;
+      --toggle-text: rgba(255,255,255,0.4); --toggle-text-hover: rgba(255,255,255,0.6);
+      --status-dot: #10B981; --status-pulse: #10B981;
+      --scroll-thumb: rgba(255,255,255,0.1); --scroll-thumb-hover: rgba(255,255,255,0.2);
+      --sources-bg: rgba(255,255,255,0.02); --sources-border: rgba(255,255,255,0.06);
+      --sources-header: #A78BFA; --sources-item-bg: rgba(255,255,255,0.02);
+      --sources-item-border: rgba(255,255,255,0.04); --sources-score: rgba(255,255,255,0.2);
+      --sources-text: rgba(255,255,255,0.5);
+      --prose-text: rgba(255,255,255,0.9); --prose-heading: #ffffff;
+      --prose-code-bg: rgba(0,0,0,0.4); --prose-code-text: #A78BFA;
+      --prose-link: #7C3AED; --prose-blockquote-border: rgba(167,139,250,0.4);
+      --prose-blockquote-text: rgba(255,255,255,0.5); --prose-pre-bg: rgba(0,0,0,0.4);
+      --prose-pre-border: rgba(255,255,255,0.06); --prose-pre-text: rgba(255,255,255,0.8);
+      --admin-label: rgba(255,255,255,0.7); --admin-desc: rgba(255,255,255,0.4);
+      --admin-code-bg: rgba(255,255,255,0.04); --admin-input-placeholder: rgba(255,255,255,0.2);
+      --file-bg: linear-gradient(135deg, rgba(124,58,237,0.2), rgba(167,139,250,0.1));
+      --file-bg-hover: linear-gradient(135deg, rgba(124,58,237,0.3), rgba(167,139,250,0.2));
+      --file-text: #A78BFA; --file-zone-border: rgba(255,255,255,0.08);
+      --file-zone-hover: rgba(124,58,237,0.3); --file-helper: rgba(255,255,255,0.3);
+      --blob-1-color: #7C3AED; --blob-1-opacity: 0.08;
+      --blob-2-color: #0891B2; --blob-2-opacity: 0.06;
+      --blob-3-color: #A78BFA; --blob-3-opacity: 0.05;
+    }
+
+    [data-theme="light"] {
+      --bg-deep: #F8F9FC; --bg-mid: #F0F1F5; --bg-top: #E8E9ED;
+      --text-primary: #1E1B4B; --text-dim: rgba(0,0,0,0.4);
+      --text-muted: #6B7280; --text-accent: #7C3AED;
+      --glass-bg: rgba(255,255,255,0.7); --glass-bg-hover: rgba(255,255,255,0.8);
+      --glass-border: rgba(0,0,0,0.08); --glass-border-light: rgba(0,0,0,0.06);
+      --nav-bg: rgba(255,255,255,0.85); --nav-border: rgba(0,0,0,0.06);
+      --input-bg: rgba(255,255,255,0.8); --input-border: rgba(0,0,0,0.08);
+      --input-placeholder: rgba(0,0,0,0.3); --input-focus: rgba(124,58,237,0.4);
+      --input-focus-ring: rgba(124,58,237,0.2);
+      --chat-bg: rgba(255,255,255,0.5); --chat-shadow: rgba(0,0,0,0.1);
+      --ai-bubble-bg: rgba(255,255,255,0.8); --ai-bubble-border: rgba(0,0,0,0.06);
+      --ai-accent: #7C3AED; --user-bubble: linear-gradient(135deg, #7C3AED, #6D28D9);
+      --user-shadow: rgba(124,58,237,0.3);
+      --btn-primary: linear-gradient(to right, #7C3AED, #6D28D9);
+      --btn-primary-hover: linear-gradient(to right, #6D28D9, #5B21B6);
+      --btn-shadow: rgba(124,58,237,0.3); --btn-shadow-hover: rgba(124,58,237,0.5);
+      --btn-secondary-border: rgba(0,0,0,0.08);
+      --btn-secondary-text: rgba(0,0,0,0.4);
+      --btn-secondary-hover: rgba(0,0,0,0.04);
+      --btn-secondary-text-hover: rgba(0,0,0,0.7);
+      --error-bg: rgba(244,63,94,0.08); --error-border: rgba(244,63,94,0.15);
+      --error-text: #E11D48; --rose-bg: rgba(244,63,94,0.08); --rose-border: rgba(244,63,94,0.15);
+      --toggle-track: rgba(0,0,0,0.08); --toggle-track-active: rgba(124,58,237,0.5);
+      --toggle-dot: rgba(0,0,0,0.3); --toggle-dot-active: #ffffff;
+      --toggle-text: rgba(0,0,0,0.4); --toggle-text-hover: rgba(0,0,0,0.6);
+      --status-dot: #10B981; --status-pulse: #10B981;
+      --scroll-thumb: rgba(0,0,0,0.1); --scroll-thumb-hover: rgba(0,0,0,0.2);
+      --sources-bg: rgba(255,255,255,0.5); --sources-border: rgba(0,0,0,0.06);
+      --sources-header: #7C3AED; --sources-item-bg: rgba(255,255,255,0.3);
+      --sources-item-border: rgba(0,0,0,0.04); --sources-score: rgba(0,0,0,0.3);
+      --sources-text: rgba(0,0,0,0.5);
+      --prose-text: #1E1B4B; --prose-heading: #1E1B4B;
+      --prose-code-bg: rgba(124,58,237,0.08); --prose-code-text: #7C3AED;
+      --prose-link: #7C3AED; --prose-blockquote-border: rgba(124,58,237,0.3);
+      --prose-blockquote-text: rgba(0,0,0,0.5); --prose-pre-bg: rgba(255,255,255,0.8);
+      --prose-pre-border: rgba(0,0,0,0.06); --prose-pre-text: rgba(0,0,0,0.7);
+      --admin-label: rgba(0,0,0,0.7); --admin-desc: rgba(0,0,0,0.5);
+      --admin-code-bg: rgba(124,58,237,0.06); --admin-input-placeholder: rgba(0,0,0,0.3);
+      --file-bg: linear-gradient(135deg, rgba(124,58,237,0.15), rgba(167,139,250,0.08));
+      --file-bg-hover: linear-gradient(135deg, rgba(124,58,237,0.25), rgba(167,139,250,0.15));
+      --file-text: #7C3AED; --file-zone-border: rgba(0,0,0,0.08);
+      --file-zone-hover: rgba(124,58,237,0.4); --file-helper: rgba(0,0,0,0.4);
+      --blob-1-color: #7C3AED; --blob-1-opacity: 0.04;
+      --blob-2-color: #0891B2; --blob-2-opacity: 0.03;
+      --blob-3-color: #A78BFA; --blob-3-opacity: 0.02;
+    }
+
+    .bg-theme { background: var(--glass-bg); }
+    .bg-theme-hover:hover { background: var(--glass-bg-hover); }
+    .border-theme { border-color: var(--glass-border); }
+    .border-theme-light { border-color: var(--glass-border-light); }
+    .text-theme { color: var(--text-primary); }
+    .text-theme-dim { color: var(--text-dim); }
+    .text-theme-muted { color: var(--text-muted); }
+    .text-theme-accent { color: var(--text-accent); }
+    .placeholder-theme::placeholder { color: var(--input-placeholder); }
+    .shadow-chat { box-shadow: 0 25px 50px -12px var(--chat-shadow); }
+    .scrollbar-theme::-webkit-scrollbar-thumb { background: var(--scroll-thumb); }
+    .scrollbar-theme::-webkit-scrollbar-thumb:hover { background: var(--scroll-thumb-hover); }
+    .prose-theme p, .prose-theme ul, .prose-theme ol, .prose-theme li { color: var(--prose-text); }
+    .prose-theme h1, .prose-theme h2, .prose-theme h3, .prose-theme h4 { color: var(--prose-heading); }
+    .prose-theme code { color: var(--prose-code-text); background: var(--prose-code-bg); padding: 0.125rem 0.25rem; border-radius: 0.25rem; }
+    .prose-theme a { color: var(--prose-link); }
+    .prose-theme blockquote { border-color: var(--prose-blockquote-border); color: var(--prose-blockquote-text); }
+    .prose-theme pre { background: var(--prose-pre-bg); border-color: var(--prose-pre-border); color: var(--prose-pre-text); }
+    .prose-theme pre code { background: transparent; padding: 0; }
+    .prose-theme { max-width: none; }
+    .prose-theme p { margin: 0.375rem 0; }
+    .prose-theme ul, .prose-theme ol { margin: 0.375rem 0; }
+    .prose-theme li { margin: 0.125rem 0; }
+    .prose-theme h1, .prose-theme h2, .prose-theme h3, .prose-theme h4 { margin: 0.5rem 0 0.25rem; font-weight: 600; }
 
     @keyframes blob1 { 0%,100%{transform:translate(0,0) scale(1)} 33%{transform:translate(100px,-80px) scale(1.15)} 66%{transform:translate(-60px,60px) scale(.85)} }
     @keyframes blob2 { 0%,100%{transform:translate(0,0) scale(1)} 33%{transform:translate(-90px,70px) scale(1.1)} 66%{transform:translate(80px,-40px) scale(.9)} }
@@ -26,10 +149,10 @@
 
     ::-webkit-scrollbar { width: 4px; }
     ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 999px; }
-    ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+    ::-webkit-scrollbar-thumb { background: var(--scroll-thumb); border-radius: 999px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--scroll-thumb-hover); }
 
-    .typing-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(167,139,250,0.6); animation: typingBounce 1.4s ease-in-out infinite; }
+    .typing-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-accent); opacity: 0.6; animation: typingBounce 1.4s ease-in-out infinite; }
     .typing-dot:nth-child(2) { animation-delay: .2s; }
     .typing-dot:nth-child(3) { animation-delay: .4s; }
     @keyframes typingBounce { 0%,60%,100%{transform:translateY(0);opacity:.4} 30%{transform:translateY(-8px);opacity:1} }
@@ -37,52 +160,58 @@
     .msg-enter { animation: msgIn .3s ease-out; }
     @keyframes msgIn { from{opacity:0;transform:translateY(8px) scale(.98)} to{opacity:1;transform:translateY(0) scale(1)} }
 
-    .glass-glow { transition: box-shadow .3s ease, border-color .3s ease; }
-    .glass-glow:hover { box-shadow: 0 0 30px rgba(124,58,237,.15), 0 0 60px rgba(124,58,237,.05); border-color: rgba(124,58,237,.3); }
-
     .nav-link { transition: all .2s ease; }
-    .nav-link:hover { background: rgba(255,255,255,.06); color: #fff; }
-    .nav-link.active { background: rgba(124,58,237,.15); color: #A78BFA; }
+    .nav-link:hover { background: var(--glass-bg-hover); color: var(--text-primary); }
 
-    .shimmer { background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%); background-size: 200% 100%; animation: shimmer 2s infinite; }
-    @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+    .theme-toggle-btn { transition: all .3s ease; }
+    .theme-toggle-btn:hover { background: var(--glass-bg-hover); }
+    .theme-toggle-btn .sun-icon { display: none; }
+    .theme-toggle-btn .moon-icon { display: block; }
+    [data-theme="light"] .theme-toggle-btn .sun-icon { display: block; }
+    [data-theme="light"] .theme-toggle-btn .moon-icon { display: none; }
   </style>
   {% block head %}{% endblock %}
 </head>
-<body class="min-h-screen bg-gradient-to-b from-[#050506] via-[#0a0a0c] to-[#020203] text-[#EDEDEF] antialiased overflow-x-hidden">
+<body style="background: linear-gradient(to bottom, var(--bg-deep), var(--bg-mid), var(--bg-top)); color: var(--text-primary);" class="min-h-screen antialiased overflow-x-hidden">
 
   <div class="fixed inset-0 -z-10 overflow-hidden pointer-events-none" aria-hidden="true">
-    <div class="blob-1 absolute -top-40 -left-40 w-[600px] h-[600px] rounded-full bg-[#7C3AED] opacity-[0.08] blur-[100px]"></div>
-    <div class="blob-2 absolute top-1/2 -right-40 w-[500px] h-[500px] rounded-full bg-[#0891B2] opacity-[0.06] blur-[90px]"></div>
-    <div class="blob-3 absolute -bottom-40 left-1/3 w-[550px] h-[550px] rounded-full bg-[#A78BFA] opacity-[0.05] blur-[100px]"></div>
+    <div class="blob-1 absolute -top-40 -left-40 w-[600px] h-[600px] rounded-full" style="background: var(--blob-1-color); opacity: var(--blob-1-opacity); filter: blur(100px);"></div>
+    <div class="blob-2 absolute top-1/2 -right-40 w-[500px] h-[500px] rounded-full" style="background: var(--blob-2-color); opacity: var(--blob-2-opacity); filter: blur(90px);"></div>
+    <div class="blob-3 absolute -bottom-40 left-1/3 w-[550px] h-[550px] rounded-full" style="background: var(--blob-3-color); opacity: var(--blob-3-opacity); filter: blur(100px);"></div>
   </div>
 
-  <header class="sticky top-0 z-50 border-b border-white/[0.06] bg-[#050506]/80 backdrop-blur-xl">
+  <header class="sticky top-0 z-50 backdrop-blur-xl" style="background: var(--nav-bg); border-bottom: 1px solid var(--nav-border);">
     <div class="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
       <a href="/" class="flex items-center gap-2.5 group">
-        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-[#7C3AED] to-[#A78BFA] flex items-center justify-center shadow-lg shadow-[#7C3AED]/30 group-hover:shadow-[#7C3AED]/50 transition-shadow duration-300">
+        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-[#7C3AED] to-[#A78BFA] flex items-center justify-center shadow-lg" style="box-shadow: 0 10px 15px -3px var(--btn-shadow);">
           <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
         </div>
-        <span class="text-sm font-semibold text-white font-heading">UniChat</span>
+        <span class="text-sm font-semibold font-heading" style="color: var(--text-primary);">UniChat</span>
       </a>
-      <nav class="flex items-center gap-1">
-        <a href="/" class="nav-link flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium text-white/60">
-          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-          Chat
-        </a>
-        <a href="/admin" class="nav-link flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium text-white/60">
-          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-          Admin
-        </a>
-        <a href="/docs" class="nav-link flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium text-white/60">
-          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-          API
-        </a>
-        <a href="/health" class="nav-link flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium text-white/60">
-          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-          Health
-        </a>
-      </nav>
+      <div class="flex items-center gap-1">
+        <nav class="flex items-center gap-1">
+          <a href="/" class="nav-link flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium" style="color: var(--text-dim);">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            Chat
+          </a>
+          <a href="/admin" class="nav-link flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium" style="color: var(--text-dim);">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            Admin
+          </a>
+          <a href="/docs" class="nav-link flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium" style="color: var(--text-dim);">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+            API
+          </a>
+          <a href="/health" class="nav-link flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium" style="color: var(--text-dim);">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+            Health
+          </a>
+        </nav>
+        <button id="themeToggle" class="theme-toggle-btn ml-2 rounded-lg p-2" style="color: var(--text-dim);" aria-label="Toggle theme">
+          <svg class="sun-icon w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+          <svg class="moon-icon w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        </button>
+      </div>
     </div>
   </header>
 
@@ -90,6 +219,30 @@
     {% block content %}{% endblock %}
   </main>
 
-  {% block scripts %}{% endblock %}
+  {% block scripts %}
+  <script>
+  (function() {
+    var html = document.documentElement;
+    var key = 'unichat-theme';
+    function getPreferred() {
+      var stored = localStorage.getItem(key);
+      if (stored) return stored;
+      return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+    }
+    function setTheme(t) {
+      html.setAttribute('data-theme', t);
+      try { localStorage.setItem(key, t); } catch(e) {}
+    }
+    setTheme(getPreferred());
+    var btn = document.getElementById('themeToggle');
+    if (btn) {
+      btn.addEventListener('click', function() {
+        var cur = html.getAttribute('data-theme');
+        setTheme(cur === 'dark' ? 'light' : 'dark');
+      });
+    }
+  })();
+  </script>
+  {% endblock %}
 </body>
 </html>

@@ -4,26 +4,26 @@
   <div class="flex items-center gap-3">
     <div class="flex items-center gap-2">
       <span class="relative flex h-2.5 w-2.5">
-        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#10B981] opacity-75"></span>
-        <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#10B981]"></span>
+        <span class="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style="background: var(--status-pulse);"></span>
+        <span class="relative inline-flex rounded-full h-2.5 w-2.5" style="background: var(--status-dot);"></span>
       </span>
-      <span class="text-sm font-medium text-white/80 font-heading">AI Assistant</span>
+      <span class="text-sm font-medium font-heading text-theme">AI Assistant</span>
     </div>
-    <span class="hidden sm:inline text-[11px] text-white/30 font-mono">POST /chat</span>
+    <span class="hidden sm:inline text-[11px] font-mono text-theme-dim">POST /chat</span>
   </div>
   <label class="inline-flex cursor-pointer items-center gap-2 select-none group">
     <input type="checkbox" id="debugSources" class="sr-only peer" {% if include_sources_default %}checked{% endif %} />
-    <div class="relative w-9 h-5 bg-white/[0.08] rounded-full peer-checked:bg-[#7C3AED]/50 transition-colors duration-200 peer-focus-visible:ring-2 peer-focus-visible:ring-[#7C3AED]/50">
-      <div class="absolute left-0.5 top-0.5 w-4 h-4 bg-white/40 rounded-full transition-all duration-200 peer-checked:translate-x-4 peer-checked:bg-white"></div>
+    <div class="relative w-9 h-5 rounded-full transition-colors duration-200 peer-checked:bg-[#7C3AED]/50 peer-focus-visible:ring-2 peer-focus-visible:ring-[#7C3AED]/50" style="background: var(--toggle-track);">
+      <div class="absolute left-0.5 top-0.5 w-4 h-4 rounded-full transition-all duration-200 peer-checked:translate-x-4" style="background: var(--toggle-dot);"></div>
     </div>
-    <span class="text-xs text-white/40 group-hover:text-white/60 transition-colors">Sources</span>
+    <span class="text-xs transition-colors" style="color: var(--toggle-text);">Sources</span>
   </label>
 </div>
 
-<div id="chat" class="flex h-[min(72vh,560px)] flex-col overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.02] backdrop-blur-xl shadow-2xl shadow-black/40">
+<div id="chat" class="flex h-[min(72vh,560px)] flex-col overflow-hidden rounded-2xl border backdrop-blur-xl shadow-chat" style="background: var(--chat-bg); border-color: var(--glass-border);">
   <div id="log" class="min-h-0 flex-1 space-y-3 overflow-y-auto p-4 scroll-smooth"></div>
 
-  <div id="loadRow" class="hidden border-t border-white/[0.06] py-3 text-center" aria-live="polite">
+  <div id="loadRow" class="hidden py-3 text-center" style="border-top: 1px solid var(--glass-border-light);" aria-live="polite">
     <div class="flex items-center justify-center gap-2.5">
       <div class="typing-dot"></div>
       <div class="typing-dot"></div>
@@ -31,12 +31,13 @@
     </div>
   </div>
 
-  <form id="form" class="flex items-end gap-2 border-t border-white/[0.06] p-3 bg-white/[0.02]" autocomplete="off">
+  <form id="form" class="flex items-end gap-2 p-3" style="border-top: 1px solid var(--glass-border-light); background: var(--glass-bg);" autocomplete="off">
     <div class="relative flex-1">
       <input
         type="text"
         id="msg"
-        class="w-full rounded-xl border border-white/[0.08] bg-white/[0.03] px-4 py-3 text-sm text-white placeholder-white/30 focus:border-[#7C3AED]/40 focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/20 transition-all duration-200"
+        class="w-full rounded-xl border px-4 py-3 text-sm placeholder-theme transition-all duration-200"
+        style="background: var(--input-bg); border-color: var(--input-border); color: var(--text-primary);"
         placeholder="Ask a question…"
         required
       />
@@ -44,14 +45,20 @@
     <button
       type="submit"
       id="send"
-      class="shrink-0 rounded-xl bg-gradient-to-r from-[#7C3AED] to-[#6D28D9] px-5 py-3 text-sm font-medium text-white shadow-lg shadow-[#7C3AED]/25 hover:shadow-[#7C3AED]/40 hover:from-[#6D28D9] hover:to-[#5B21B6] disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200"
+      class="shrink-0 rounded-xl px-5 py-3 text-sm font-medium text-white disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200"
+      style="background: var(--btn-primary); box-shadow: 0 10px 15px -3px var(--btn-shadow);"
+      onmouseover="this.style.background='var(--btn-primary-hover)'; this.style.boxShadow='0 10px 15px -3px var(--btn-shadow-hover)'"
+      onmouseout="this.style.background='var(--btn-primary)'; this.style.boxShadow='0 10px 15px -3px var(--btn-shadow)'"
     >
       <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
     </button>
     <button
       type="button"
       id="clear"
-      class="shrink-0 rounded-xl border border-white/[0.08] px-3.5 py-3 text-xs text-white/40 hover:text-white/70 hover:bg-white/[0.04] transition-all duration-200"
+      class="shrink-0 rounded-xl border px-3.5 py-3 text-xs transition-all duration-200"
+      style="border-color: var(--btn-secondary-border); color: var(--btn-secondary-text);"
+      onmouseover="this.style.background='var(--btn-secondary-hover)'; this.style.color='var(--btn-secondary-text-hover)'"
+      onmouseout="this.style.background='transparent'; this.style.color='var(--btn-secondary-text)'"
       title="Clear conversation"
     >
       <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
@@ -59,7 +66,7 @@
   </form>
 </div>
 
-<div id="err" class="mt-3 hidden rounded-xl border border-rose-500/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-300 backdrop-blur-sm" role="alert"></div>
+<div id="err" class="mt-3 hidden rounded-xl border px-4 py-3 text-sm backdrop-blur-sm" style="background: var(--error-bg); border-color: var(--error-border); color: var(--error-text);" role="alert"></div>
 {% endblock %}
 
 {% block head %}
@@ -72,6 +79,7 @@
 {% endblock %}
 
 {% block scripts %}
+{{ super() }}
 <script>
 (function () {
   const log = document.getElementById("log");
@@ -136,7 +144,7 @@
           if (typeof katex !== "undefined" && katex.renderToString) {
             return katex.renderToString(seg.text, { displayMode: true, throwOnError: false, strict: false });
           }
-          return '<pre class="my-2 overflow-x-auto rounded-lg border border-white/[0.06] bg-black/40 p-3 text-xs text-white/60 font-mono">' + escapeHtml(seg.text) + '</pre>';
+          return '<pre class="my-2 overflow-x-auto rounded-lg p-3 text-xs font-mono" style="background: var(--prose-pre-bg); border: 1px solid var(--prose-pre-border); color: var(--prose-pre-text);">' + escapeHtml(seg.text) + '</pre>';
         }
         var h = typeof marked !== "undefined" && marked.parse ? marked.parse(seg.text, { breaks: true }) : escapeHtml(seg.text);
         return typeof h === "string" ? h : "";
@@ -171,16 +179,17 @@
     row.className = "flex msg-enter " + (isUser ? "justify-end" : "justify-start");
     const b = document.createElement("div");
     if (isUser) {
-      b.className = "max-w-[80%] rounded-2xl rounded-br-md bg-gradient-to-br from-[#7C3AED] to-[#6D28D9] px-4 py-2.5 text-sm text-white shadow-lg shadow-[#7C3AED]/20 whitespace-pre-wrap break-words";
+      b.className = "max-w-[80%] rounded-2xl rounded-br-md px-4 py-2.5 text-sm text-white whitespace-pre-wrap break-words shadow-lg";
+      b.style.background = "var(--user-bubble)";
+      b.style.boxShadow = "0 10px 15px -3px var(--user-shadow)";
       b.textContent = text;
     } else {
-      b.className = "max-w-[85%] rounded-2xl rounded-bl-md border border-white/[0.06] border-l-[3px] border-l-[#A78BFA] bg-white/[0.03] px-4 py-2.5 text-sm text-white/90 " +
-        "prose prose-invert prose-sm max-w-none prose-p:my-1.5 prose-ul:my-1.5 prose-ol:my-1.5 " +
-        "prose-headings:my-2 prose-headings:font-semibold prose-li:my-0.5 " +
-        "prose-pre:bg-black/40 prose-pre:border prose-pre:border-white/[0.06] prose-pre:text-white/80 " +
-        "prose-code:text-[#A78BFA] prose-code:bg-white/[0.04] prose-code:px-1 prose-code:py-0.5 prose-code:rounded " +
-        "prose-a:text-[#7C3AED] prose-blockquote:border-[#A78BFA]/40 prose-blockquote:text-white/50 " +
-        "[&_.katex-display]:my-2 [&_.katex-display]:overflow-x-auto [&_.katex]:text-inherit";
+      b.className = "max-w-[85%] rounded-2xl rounded-bl-md border px-4 py-2.5 text-sm";
+      b.style.background = "var(--ai-bubble-bg)";
+      b.style.borderColor = "var(--ai-bubble-border)";
+      b.style.borderLeft = "3px solid var(--ai-accent)";
+      b.style.color = "var(--prose-text)";
+      b.classList.add("prose-theme");
       b.innerHTML = renderAssistantMarkdown(text);
       renderMathInBubble(b);
     }
@@ -191,29 +200,37 @@
   function addSources(sources) {
     if (!sources || !sources.length) return;
     const wrap = document.createElement("div");
-    wrap.className = "msg-enter ml-2 mr-2 rounded-xl border border-white/[0.06] bg-white/[0.02] p-3";
+    wrap.className = "msg-enter ml-2 mr-2 rounded-xl border p-3";
+    wrap.style.background = "var(--sources-bg)";
+    wrap.style.borderColor = "var(--sources-border)";
     const t = document.createElement("div");
-    t.className = "flex items-center gap-2 mb-2 text-xs font-medium text-[#A78BFA]";
+    t.className = "flex items-center gap-2 mb-2 text-xs font-medium";
+    t.style.color = "var(--sources-header)";
     t.innerHTML = '<svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg> Retrieved Sources';
     wrap.appendChild(t);
     const ul = document.createElement("ul");
     ul.className = "space-y-2";
     for (const s of sources) {
       const li = document.createElement("li");
-      li.className = "rounded-lg border border-white/[0.04] bg-white/[0.02] p-2.5";
+      li.className = "rounded-lg border p-2.5";
+      li.style.background = "var(--sources-item-bg)";
+      li.style.borderColor = "var(--sources-item-border)";
       const header = document.createElement("div");
       header.className = "flex items-center justify-between mb-1";
       const src = document.createElement("span");
-      src.className = "text-[11px] font-mono text-white/30 truncate max-w-[70%]";
+      src.className = "text-[11px] font-mono truncate max-w-[70%]";
+      src.style.color = "var(--text-dim)";
       src.textContent = s.source || "unknown";
       const score = document.createElement("span");
-      score.className = "text-[11px] font-mono text-white/20";
+      score.className = "text-[11px] font-mono";
+      score.style.color = "var(--sources-score)";
       score.textContent = Number(s.score).toFixed(3);
       header.appendChild(src);
       header.appendChild(score);
       li.appendChild(header);
       const txt = document.createElement("div");
-      txt.className = "text-xs text-white/50 leading-relaxed break-words line-clamp-3";
+      txt.className = "text-xs leading-relaxed break-words line-clamp-3";
+      txt.style.color = "var(--sources-text)";
       txt.textContent = s.text;
       li.appendChild(txt);
       ul.appendChild(li);
