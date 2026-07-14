@@ -126,10 +126,17 @@ def health_check(request: Request) -> HealthResponse:
     s: Settings = request.app.state.settings
     emb: EmbeddingService | None = getattr(request.app.state, "embeddings", None)
     st: VectorStore | None = getattr(request.app.state, "store", None)
+    
+    provider = s.llm_provider.lower().strip()
+    if provider == "openrouter" and not s.openrouter_api_key and s.groq_api_key:
+        provider = "groq"
+        
     return HealthResponse(
         status="ok",
         embedding_ready=bool(emb and emb.is_ready()),
         openrouter_configured=bool(s.openrouter_api_key and s.openrouter_api_key.strip()),
+        groq_configured=bool(s.groq_api_key and s.groq_api_key.strip()),
+        llm_provider=provider,
         index_vectors=int(st.ntotal) if st else 0,
         embedding_model=s.embedding_model,
         data_dir=str(s.data_dir),
@@ -158,10 +165,10 @@ async def chat(
 ) -> ChatResponse:
     s: Settings = _get_settings(request)
     msg, include_sources = _parse_chat_request(body)
-    if not s.openrouter_api_key or not str(s.openrouter_api_key).strip():
+    if not s.is_llm_configured:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Chat is unavailable: OPENROUTER_API_KEY is not set",
+            detail="Chat is unavailable: LLM is not configured (set OPENROUTER_API_KEY or GROQ_API_KEY)",
         )
     rag = _get_rag(request)
     if getattr(request.app.state, "store", None) and request.app.state.store.ntotal == 0:

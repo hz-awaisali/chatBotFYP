@@ -44,6 +44,8 @@ class HealthResponse(BaseModel):
     status: str
     embedding_ready: bool
     openrouter_configured: bool
+    groq_configured: bool = False
+    llm_provider: str = "openrouter"
     index_vectors: int
     embedding_model: str
     data_dir: str

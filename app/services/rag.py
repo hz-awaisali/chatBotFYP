@@ -62,8 +62,8 @@ class RAGService:
     async def answer(
         self, user_message: str, include_sources: bool
     ) -> Tuple[str, Optional[List[SourceChunk]]]:
-        if not self._s.openrouter_api_key:
-            raise RuntimeError("LLM is not configured (set OPENROUTER_API_KEY)")
+        if not self._s.is_llm_configured:
+            raise RuntimeError("LLM is not configured (set OPENROUTER_API_KEY or GROQ_API_KEY)")
 
         qv = self._emb.encode_query(user_message)
         hits = self._store.search(qv, self._s.top_k)

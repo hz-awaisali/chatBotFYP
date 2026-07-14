@@ -12,8 +12,12 @@ services:
     environment:
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
       - OPENROUTER_MODEL=${OPENROUTER_MODEL:-openai/gpt-oss-120b:free}
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - GROQ_MODEL=${GROQ_MODEL:-llama-3.3-70b-versatile}
+      - LLM_PROVIDER=${LLM_PROVIDER:-openrouter}
       - ADMIN_TOKEN=${ADMIN_TOKEN}
       - CORS_ORIGINS=${CORS_ORIGINS:-*}
+
     volumes:
       - chatbot_data:/home/user/app/data
     healthcheck:

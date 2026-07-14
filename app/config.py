@@ -32,6 +32,20 @@ class Settings(BaseSettings):
     openrouter_referer: str | None = "https://github.com/vercel/vercel"
     openrouter_title: str | None = "University RAG Chatbot"
 
+    groq_api_key: str | None = None
+    groq_base: str = "https://api.groq.com/openai/v1"
+    groq_model: str = "llama-3.3-70b-versatile"
+    llm_provider: str = "openrouter"
+
+    @property
+    def is_llm_configured(self) -> bool:
+        provider = self.llm_provider.lower().strip()
+        if provider == "openrouter" and not self.openrouter_api_key and self.groq_api_key:
+            provider = "groq"
+        if provider == "groq":
+            return bool(self.groq_api_key and self.groq_api_key.strip())
+        return bool(self.openrouter_api_key and self.openrouter_api_key.strip())
+
     embedding_model: str = "sentence-transformers/all-MiniLM-L6-v2"
     top_k: int = 5
     chunk_size: int = 500
