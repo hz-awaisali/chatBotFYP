@@ -15,6 +15,13 @@ def _default_data_dir() -> Path:
     return Path(__file__).resolve().parent.parent / "data" / "kb"
 
 
+def _default_uploaded_docs_dir() -> Path:
+    base = os.getenv("VERCEL", "")
+    if base:
+        return Path("/tmp") / "uploaded_docs"
+    return Path(__file__).resolve().parent.parent / "data" / "uploaded_docs"
+
+
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=".env",
@@ -23,8 +30,10 @@ class Settings(BaseSettings):
     )
 
     data_dir: Path = Field(default_factory=_default_data_dir)
+    uploaded_docs_dir: Path = Field(default_factory=_default_uploaded_docs_dir)
     faiss_index_name: str = "index.faiss"
     metadata_name: str = "metadata.json"
+
 
     openrouter_api_key: str | None = None
     openrouter_base: str = "https://openrouter.ai/api/v1"
@@ -65,7 +74,8 @@ class Settings(BaseSettings):
             return ["*"]
         return [o.strip() for o in raw.split(",") if o.strip()]
 
-    @field_validator("data_dir", mode="before")
+    @field_validator("data_dir", "uploaded_docs_dir", mode="before")
     @classmethod
-    def _coerce_data_dir(cls, v) -> Path:
+    def _coerce_paths(cls, v) -> Path:
         return Path(v) if not isinstance(v, Path) else v
+

@@ -56,6 +56,8 @@ async def lifespan(app: FastAPI):
     app.state.settings = s
     app.state.rag = None
     s.data_dir.mkdir(parents=True, exist_ok=True)
+    s.uploaded_docs_dir.mkdir(parents=True, exist_ok=True)
+
 
     emb = EmbeddingService(s)
     try:
@@ -232,9 +234,23 @@ async def add_documents(
                 )
             )
             continue
+        
+        try:
+            file_path = s.uploaded_docs_dir / name
+            file_path.write_bytes(data)
+        except Exception as e:
+            fe.append(
+                FileIngestError(
+                    filename=name,
+                    error=f"Failed to save file: {e}"[:200]
+                )
+            )
+            continue
+
         n_files += 1
         try:
             if lower.endswith(".txt"):
+
                 raw_t = ingestion.read_txt_bytes(data)
             else:
                 raw_t = ingestion.read_pdf_bytes(data)
@@ -308,3 +324,79 @@ async def admin_page(request: Request) -> HTMLResponse:
         "admin.html",
         {"title": "Upload documents"},
     )
+
+
+def rebuild_index(s: Settings, emb: EmbeddingService) -> VectorStore:
+    store = VectorStore.create_new(s, emb.dimension)
+    if s.uploaded_docs_dir.exists():
+        for p in s.uploaded_docs_dir.iterdir():
+            if p.is_file() and p.suffix.lower() in (".txt", ".pdf"):
+                try:
+                    data = p.read_bytes()
+                    if p.suffix.lower() == ".txt":
+                        text = ingestion.read_txt_bytes(data)
+                    else:
+                        text = ingestion.read_pdf_bytes(data)
+                    
+                    chunks: list[dict] = []
+                    for chunk, src in ingestion.split_chunks(text, source=p.name, settings=s):
+                        chunks.append({"text": chunk, "source": src})
+                    
+                    if chunks:
+                        texts = [c["text"] for c in chunks]
+                        vecs = emb.encode(texts)
+                        if vecs.size > 0:
+                            store.add_texts(chunks, vecs)
+                except Exception as e:
+                    logger.error("Failed to re-index %s: %s", p.name, e)
+    store.save()
+    return store
+
+
+@app.get("/admin/files")
+async def list_files(request: Request):
+    s: Settings = _get_settings(request)
+    _check_admin(request, s)
+    files = []
+    if s.uploaded_docs_dir.exists():
+        for p in s.uploaded_docs_dir.iterdir():
+            if p.is_file() and p.suffix.lower() in (".txt", ".pdf"):
+                stat = p.stat()
+                files.append({
+                    "name": p.name,
+                    "size": stat.st_size,
+                    "modified": stat.st_mtime
+                })
+    return files
+
+
+@app.delete("/admin/files/{filename}")
+async def delete_file(request: Request, filename: str):
+    s: Settings = _get_settings(request)
+    _check_admin(request, s)
+    
+    if "/" in filename or "\\" in filename or filename == ".." or filename == ".":
+        raise HTTPException(status_code=400, detail="Invalid filename")
+        
+    file_path = s.uploaded_docs_dir / filename
+    if not file_path.is_file():
+        raise HTTPException(status_code=404, detail="File not found")
+        
+    try:
+        file_path.unlink()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to delete file: {e}")
+        
+    emb = request.app.state.embeddings
+    if not emb or not emb.is_ready():
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Embeddings service not ready")
+        
+    try:
+        new_store = rebuild_index(s, emb)
+        request.app.state.store = new_store
+        request.app.state.rag = RAGService(s, emb, new_store, request.app.state.llm)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to rebuild index: {e}")
+        
+    return {"status": "success", "message": f"File {filename} deleted and index rebuilt"}
+
