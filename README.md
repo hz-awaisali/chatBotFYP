@@ -9,46 +9,76 @@ app_port: 7860
 
 # University RAG Chatbot (FastAPI)
 
-Backend for an AI university assistant using **RAG** (FAISS + [Sentence-Transformers](https://www.sbert.net) + [OpenRouter](https://openrouter.ai/)). It exposes JSON APIs (e.g. for a Flutter app) and a small **Jinja2 + Tailwind** chat and admin UI for testing.
+Backend for an AI university assistant using **RAG** (FAISS + [Sentence-Transformers](https://www.sbert.net) + [OpenRouter](https://openrouter.ai/) / [Groq API](https://groq.com/)). It exposes JSON APIs (e.g. for a Flutter app) and provides a sleek **Jinja2 + Tailwind** chat and document management interface.
 
-The YAML block above is for [Hugging Face Spaces](https://huggingface.co/docs/hub/spaces-sdks-docker) (Docker SDK). On GitHub it may appear as a short preamble at the top of this file.
+---
+
+## Features
+
+*   **Dual LLM Provider Support**: Dynamically switch between **OpenRouter** and **Groq** APIs depending on your API keys and provider preference.
+*   **Knowledge Base Document Manager**: Upload, view, and delete `.txt` or `.pdf` documents directly from the admin panel.
+*   **Auto-rebuild Vector Search**: Deleting outdated documents unlinks them from storage and automatically rebuilds the FAISS vector index using the remaining documents, preventing hallucinated and outdated answers.
+*   **Docker Container Optimization**: Optimized Docker builds pre-install CPU-only PyTorch and pre-cache embedding models, speeding up VPS deployment builds and enabling instant container boot times.
+*   **Persistent Storage**: Mounts a Docker volume to persist all source files and the vectorized FAISS database permanently.
+
+---
 
 ## Stack
 
-- FastAPI, Jinja2, FAISS (`faiss-cpu`), `sentence-transformers`, `pypdf` for PDFs, `httpx` for the LLM
+*   **Backend**: FastAPI, Jinja2, Uvicorn, HTTPX
+*   **Vector DB & Ingestion**: FAISS (`faiss-cpu`), `sentence-transformers` (`all-MiniLM-L6-v2`), `pypdf`, `numpy`
+*   **LLMs**: OpenRouter & Groq API
 
-## Local setup
+---
+
+## Local Setup
 
 Requires **Python 3.10+**.
 
-```bash
-cd fastapi
-python -m venv .venv
-.venv\Scripts\activate
-pip install -r requirements.txt
-# or: pip install .
-```
+1.  **Clone and Navigate**:
+    ```bash
+    git clone <your-repo-url>
+    cd chatBotFYP
+    ```
 
-### Environment
+2.  **Create and Activate Virtual Environment**:
+    ```bash
+    python -m venv .venv
+    # Windows:
+    .venv\Scripts\activate
+    # macOS/Linux:
+    source .venv/bin/activate
+    ```
 
-Create a `.env` in the project root (optional if you set variables in the shell):
+3.  **Install Dependencies**:
+    ```bash
+    pip install -r requirements.txt
+    ```
 
-| Variable | Description |
-| -------- | ----------- |
-| `OPENROUTER_API_KEY` | **Required** for `POST /chat` — [OpenRouter](https://openrouter.ai/) API key |
-| `OPENROUTER_BASE` | Default: `https://openrouter.ai/api/v1` |
-| `OPENROUTER_MODEL` | Default: `openai/gpt-4o-mini` (change in dashboard to any OpenRouter model id) |
-| `EMBEDDING_MODEL` | Default: `sentence-transformers/all-MiniLM-L6-v2` (384-dim) |
-| `DATA_DIR` | Default: `data/kb` (local) or on Vercel, `/tmp/kb` when `VERCEL` is set) |
-| `TOP_K` | RAG top-k (default: 5) |
-| `CHUNK_SIZE` / `CHUNK_OVERLAP` | Chunking for new documents (defaults: 500 / 80) |
-| `ADMIN_TOKEN` | If set, `POST /add-documents` requires header `X-Admin-Token: <value>` (or `Authorization: Bearer …`) |
-| `CORS_ORIGINS` | Comma-separated list, or `*` for all origins (default: `*`) |
-| `MAX_UPLOAD_BYTES` | Per-file cap for uploads (default: 20 MB) |
+---
 
-**First run** will download the embedding model from Hugging Face (can take a while).
+## Environment Variables
 
-## Run the server
+Create a `.env` in the project root:
+
+| Variable | Description | Default |
+| -------- | ----------- | ------- |
+| `LLM_PROVIDER` | Active LLM client. Options: `openrouter`, `groq` | `openrouter` (auto-detects `groq` if OpenRouter key is missing and Groq key is present) |
+| `OPENROUTER_API_KEY` | OpenRouter API Key | `None` |
+| `OPENROUTER_MODEL` | OpenRouter chat model | `openai/gpt-oss-120b:free` |
+| `GROQ_API_KEY` | Groq API Key | `None` |
+| `GROQ_MODEL` | Groq chat model | `llama-3.3-70b-versatile` |
+| `EMBEDDING_MODEL` | Embedding model for text chunks | `sentence-transformers/all-MiniLM-L6-v2` |
+| `ADMIN_TOKEN` | Required in headers (`X-Admin-Token`) for upload/delete endpoints if set | `None` |
+| `CORS_ORIGINS` | Comma-separated CORS origins or `*` | `*` |
+| `TOP_K` | Number of RAG chunks to retrieve | `5` |
+| `CHUNK_SIZE` | Chunk size (by char count) for splitting texts | `500` |
+| `CHUNK_OVERLAP` | Overlap size between adjacent chunks | `80` |
+| `MAX_UPLOAD_BYTES` | Maximum file size for uploads | `20971520` (20 MB) |
+
+---
+
+## Run the Server
 
 ```bash
 python main.py
@@ -56,58 +86,65 @@ python main.py
 uvicorn main:app --host 0.0.0.0 --port 5001 --reload
 ```
 
-Open: `http://127.0.0.1:5001/` (chat), `http://127.0.0.1:5001/admin` (uploads), `http://127.0.0.1:5001/docs` (OpenAPI).
+Open your browser to:
+*   **Chat Interface**: `http://127.0.0.1:5001/`
+*   **Knowledge Base Manager**: `http://127.0.0.1:5001/admin`
+*   **OpenAPI Documentation**: `http://127.0.0.1:5001/docs`
+*   **Health Status**: `http://127.0.0.1:5001/health`
 
-## Ingest sample data (curl)
+---
 
-With the server running, index the bundled sample texts (paths are relative to your CWD; use full paths on Windows as needed):
+## API Documentation
 
-```bash
-curl -X POST "http://127.0.0.1:5001/add-documents" ^
-  -F "files=@data/sample/academic_honesty.txt" ^
-  -F "files=@data/sample/registration.txt"
-```
+| Method | Path | Auth Header (Optional) | Description |
+| ------ | ---- | ---------------------- | ----------- |
+| `GET` | `/` | None | Chat UI (Jinja2 Template) |
+| `GET` | `/admin` | None | Document Uploader and File Manager UI |
+| `POST` | `/chat` | None | Send user query. JSON body: `{"message": "...", "include_sources"?: bool}` |
+| `POST` | `/add-documents` | `X-Admin-Token` | Upload and index `.txt` or `.pdf` files. Saves files to disk and adds chunks to FAISS index. |
+| `GET` | `/admin/files` | `X-Admin-Token` | List all active source files in the knowledge base. |
+| `DELETE` | `/admin/files/{filename}` | `X-Admin-Token` | Delete a file from disk and automatically rebuild the FAISS search index. |
+| `GET` | `/health` | None | Status endpoint returning system checks and LLM configuration info. |
 
-If you set `ADMIN_TOKEN`, add `-H "X-Admin-Token: YOUR_TOKEN"`.
+---
 
-Then ask a question in the browser UI or:
+## Deployment Guides
 
-```bash
-curl -X POST "http://127.0.0.1:5001/chat" ^
-  -H "Content-Type: application/json" ^
-  -d "{\"message\": \"What is the academic honesty policy?\"}"
-```
+### 1. VPS Deployment using Coolify (Docker Compose)
 
-Response JSON: `{ "reply": "…", "sources": null }`. Add `include_sources: true` in the body to return retrieved chunks in `sources` (or open `/` with `?debug=1` and enable “Show source chunks” in the UI).
+Coolify makes deploying to a Contabo VPS simple. We provide a `docker-compose.yaml` in the repository that builds the Dockerfile, exposes the app, mounts persistent volumes, and handles health checks.
 
-## API
+#### Steps:
+1.  **Repository Setup**: Connect your GitHub/GitLab account to your Coolify dashboard.
+2.  **Create Service**: Go to **Resources** -> **New Resource** -> **Service** (or **Docker Compose**) and select your repository and branch.
+3.  **Deploy Configuration**: Coolify automatically reads the root `docker-compose.yaml`.
+4.  **Configure Environment**: Add the following keys in Coolify's Environment tab:
+    *   `GROQ_API_KEY`: Your Groq API key (to use Groq's fast tier).
+    *   `LLM_PROVIDER`: `groq` (or `openrouter`).
+    *   `ADMIN_TOKEN`: A secure token to protect upload and delete APIs.
+5.  **Data Persistence**: Coolify will automatically provision a Docker named volume `chatbot_data` and mount it to `/home/user/app/data`. This keeps your uploaded source documents and the FAISS vector index safe during container updates.
+6.  **Set Domain**: In the settings, configure your subdomain (e.g., `https://chatbot.yourdomain.com`). Coolify will handle Let's Encrypt SSL and proxy requests to internal port `7860`.
+7.  **Deploy**: Click **Deploy**.
 
-| Method | Path | Description |
-| ------ | ---- | ----------- |
-| `GET` | `/` | Chat UI (Jinja2) |
-| `GET` | `/admin` | Optional upload form → `POST /add-documents` |
-| `POST` | `/chat` | JSON `{ "message", "include_sources"?: bool }` |
-| `POST` | `/add-documents` | Multipart, field name `files` (repeat for multiple) — `.txt`, `.pdf` only; incrementally updates FAISS; duplicate chunks (same hash) skipped |
-| `GET` | `/health` | Status, `embedding_ready`, `index_vectors`, paths |
+---
 
-`GET /` includes `?debug=1` to pre-enable source blocks in the UI (same as `include_sources: true` on each message).
+### 2. Deploying on Hugging Face Spaces
 
-## Deploying on Hugging Face Spaces
+*   Create a **Docker** Space on Hugging Face.
+*   Connect your repository. Hugging Face reads the root `Dockerfile` and listens on port `7860`.
+*   Go to **Settings** -> **Variables and secrets** and add `OPENROUTER_API_KEY` (or `GROQ_API_KEY`), `ADMIN_TOKEN`, etc.
+*   *Note*: Ephemeral disk space on Hugging Face spaces resets on container sleep/restart unless you attach persistent storage.
 
-- Create a **Docker** Space and push this repo (or connect GitHub). The image is built from the root [`Dockerfile`](Dockerfile); the Space listens on **7860** (`app_port` in the README frontmatter matches `EXPOSE` / `uvicorn`).
-- In the Space **Settings → Variables and secrets**, add at least **`OPENROUTER_API_KEY`** (and optionally `ADMIN_TOKEN`, `EMBEDDING_MODEL`, `CORS_ORIGINS`, etc.). Same names as in the table above.
-- **Hardware**: the default embedding stack (`sentence-transformers` + PyTorch + FAISS) needs enough RAM; start with **CPU Upgrade** if the Space OOMs during model load or encoding.
-- **Persistence**: disk on a Space is ephemeral unless you attach [Storage](https://huggingface.co/docs/hub/storage-buckets) or sync elsewhere. The FAISS index under `DATA_DIR` is lost on restart unless you point `DATA_DIR` at mounted storage (e.g. `/data/kb` when a bucket is attached) or re-ingest after restarts.
-- **Permissions**: the Dockerfile follows HF’s **UID 1000** non-root user and copies app files with `--chown=user`.
+---
 
-## Deploying on Vercel
+### 3. Deploying on Vercel
 
-- Set **environment variables** in the Vercel project, especially `OPENROUTER_API_KEY` and, if you use it, `ADMIN_TOKEN`.
-- [vercel.json](vercel.json) sets `maxDuration` and `memory` for the Python function (adjust to your plan).
-- `sentence-transformers` and PyTorch are **large**; cold starts are slow, and the serverless **filesystem is not durable** across all scenarios. The app writes the FAISS index under `DATA_DIR` (e.g. `/tmp/kb` on Vercel) — for production, prefer a long-running host with a **persistent volume**, or add **object storage** (S3 / Vercel Blob) sync for `index.faiss` and `metadata.json` (not implemented in this template).
-- CORS: set `CORS_ORIGINS` to your Flutter or web app origin in production.
-- Vercel’s [Python function limits](https://vercel.com/docs/functions/runtimes/python) and bundle size still apply; using a **small** embedding model (the default) helps.
+*   Set your environment variables in Vercel.
+*   Configure the Python serverless function parameters in `vercel.json`.
+*   *Note*: Due to large dependencies (PyTorch, sentence-transformers), serverless functions can face cold-start lag. We recommend VPS/Docker hosting for best RAG performance.
+
+---
 
 ## License
 
-As your project requires.
+This project is licensed under the MIT License.
